@@ -5,6 +5,10 @@ import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
 
 const AppContext = createContext(null)
 
+// Environment variables
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const PRODUCTS_API = import.meta.env.VITE_PRODUCTS_API || 'https://fakestoreapi.com/products'
+
 export const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -45,7 +49,7 @@ export const AppProvider = ({ children }) => {
 
     const fetchAdminOrders = async () => {
         try {
-            const response = await axios.get('http://localhost:3001/api/orders')
+            const response = await axios.get(`${API_URL}/api/orders`)
             setAdminOrders(response.data)
         } catch (error) {
             console.error('Failed to fetch admin orders:', error)
@@ -74,7 +78,7 @@ export const AppProvider = ({ children }) => {
         const controller = new AbortController()
         setProductsLoading(true)
         axios
-            .get('https://fakestoreapi.com/products', { signal: controller.signal })
+            .get(PRODUCTS_API, { signal: controller.signal })
             .then((res) => {
                 // Add quantity to API products 
                 const productsWithQty = (res.data || []).map((p, index) => ({
@@ -157,7 +161,7 @@ export const AppProvider = ({ children }) => {
 
         // Save to server file
         try {
-            await axios.post('http://localhost:3001/api/orders', order)
+            await axios.post(`${API_URL}/api/orders`, order)
             setAdminOrders(prev => [order, ...prev])
         } catch (error) {
             console.error('Failed to save order to server:', error)
@@ -168,13 +172,15 @@ export const AppProvider = ({ children }) => {
     }
 
     const updateOrderStatus = async (orderId, status) => {
-        // Update locally first (optimistic update)
+        // Update locally 
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
         setAdminOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
 
-        // Update on server (auto-refresh will sync it back)
+        // Update on server
         try {
-            await axios.put(`http://localhost:3001/api/orders/${orderId}`, { status })
+            await axios.put(`${API_URL}/api/orders/${orderId}`, { status })
+            // Refetch from server 
+            await fetchAdminOrders()
         } catch (error) {
             console.error('Failed to update order status on server:', error)
         }
