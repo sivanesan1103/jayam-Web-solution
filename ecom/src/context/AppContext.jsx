@@ -42,11 +42,8 @@ export const AppProvider = ({ children }) => {
     // adminOrders 
     const [adminOrders, setAdminOrders] = useState([])
 
-    
 
-    // Fetch admin orders on mount
-    useEffect(() => {
-        const fetchAdminOrders = async () => {
+    const fetchAdminOrders = async () => {
         try {
             const response = await axios.get('http://localhost:3001/api/orders')
             setAdminOrders(response.data)
@@ -54,6 +51,8 @@ export const AppProvider = ({ children }) => {
             console.error('Failed to fetch admin orders:', error)
         }
     }
+
+    useEffect(() => {
         fetchAdminOrders()
     }, [])
 
@@ -169,10 +168,11 @@ export const AppProvider = ({ children }) => {
     }
 
     const updateOrderStatus = async (orderId, status) => {
+        // Update locally first (optimistic update)
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
         setAdminOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o))
 
-        // Update on server
+        // Update on server (auto-refresh will sync it back)
         try {
             await axios.put(`http://localhost:3001/api/orders/${orderId}`, { status })
         } catch (error) {
@@ -235,6 +235,7 @@ export const AppProvider = ({ children }) => {
                 removeFromWishlist,
                 orders,
                 adminOrders,
+                fetchAdminOrders,
                 placeOrder,
                 updateOrderStatus
             }}

@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
 import { useNavigate } from 'react-router-dom'
 
 const AdminPage = () => {
-  const { adminOrders, updateOrderStatus } = useAppContext()
+  const { adminOrders, updateOrderStatus, fetchAdminOrders } = useAppContext()
   const navigate = useNavigate()
+
+  // Fetch orders when component mounts (React way - only once)
+  useEffect(() => {
+    fetchAdminOrders()
+  }, []) // Empty dependency = runs only on mount
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -12,13 +17,22 @@ const AdminPage = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Admin Panel</h1>
           <div className="flex gap-2">
+            <button 
+              onClick={fetchAdminOrders} 
+              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              🔄 Sync Orders
+            </button>
             <button onClick={() => navigate('/')} className="px-4 py-2 bg-gray-200 rounded">Back to Shop</button>
             <span className="px-4 py-2 bg-red-100 text-red-600 rounded font-medium">Admin Mode</span>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-4">Orders ({adminOrders.length})</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Orders ({adminOrders.length})</h2>
+        
+          </div>
           
           {adminOrders.length === 0 ? (
             <p className="text-gray-600">No orders yet</p>

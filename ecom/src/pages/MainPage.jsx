@@ -14,19 +14,19 @@ const MainPage = () => {
 
   // Apply filters
   const filteredProducts = products.filter(product => {
-    // Search: match if query is empty or title includes query
+    
     if (searchQuery && product.title) {
       if (!product.title.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false
       }
     }
     
-    // Category: match if 'all' or category matches
+s
     if (selectedCategory !== 'all' && product.category !== selectedCategory) {
       return false
     }
     
-    // Price: match based on price range
+    
     const price = Number(product.price) || 0
     if (priceRange === 'under50' && price >= 50) return false
     if (priceRange === '50to100' && (price < 50 || price > 100)) return false

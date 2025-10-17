@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
 import Navbar from '../components/Navbar'
 
 const DashboardPage = () => {
-  const { cart, wishlist, orders, removeFromCart, updateCartQty, removeFromWishlist, addToCart, placeOrder } = useAppContext()
+  const { cart, wishlist, orders, adminOrders, fetchAdminOrders, removeFromCart, updateCartQty, removeFromWishlist, addToCart, placeOrder, user } = useAppContext()
   const [activeTab, setActiveTab] = useState('cart')
   const [selectedAddress, setSelectedAddress] = useState('home')
   const [showAddAddressForm, setShowAddAddressForm] = useState(false)
@@ -12,7 +12,16 @@ const DashboardPage = () => {
     { id: 'home', label: 'Home', street: '211 caver nagar 10th street new bus stand thanjavur ', city: 'Thanjavur', zip: '613005' },
     { id: 'work', label: 'Work', street: '211 caver nagar 10th street new bus stand thanjavur', city: 'Thanjavur', zip: '613005' }
   ])
- 
+
+  // Get user's orders from server file (adminOrders contains all orders)
+  const userOrders = adminOrders.length > 0 ? adminOrders : orders
+
+  // Fetch orders when switching to orders tab (React way - only when needed)
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      fetchAdminOrders()
+    }
+  }, [activeTab]) // Only re-fetch when tab changes to 'orders'
 
   const cartTotal = cart.reduce((sum, it) => sum + it.price * it.qty, 0)
 
@@ -266,19 +275,36 @@ const DashboardPage = () => {
         {/* Order History Tab */}
         {activeTab === 'orders' && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Order History</h2>
-            {orders.length === 0 ? (
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Order History</h2>
+              <button
+                onClick={fetchAdminOrders}
+                className="px-4 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
+              >
+                🔄 Sync Status
+              </button>
+            </div>
+            {userOrders.length === 0 ? (
               <p className="text-gray-600">No orders yet</p>
             ) : (
               <div className="space-y-4">
-                {orders.map(order => (
+                {userOrders.map(order => (
                   <div key={order.id} className="bg-white p-6 rounded-lg shadow">
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h3 className="font-bold">Order #{order.id}</h3>
                         <p className="text-sm text-gray-600">{new Date(order.date).toLocaleDateString()}</p>
+                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                          Live from server
+                        </p>
                       </div>
-                      <span className={`px-3 py-1 rounded text-sm font-medium ${order.status === 'On Process' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                      <span className={`px-3 py-1 rounded text-sm font-medium ${
+                        order.status === 'On Process' ? 'bg-yellow-100 text-yellow-700' : 
+                        order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
                         {order.status}
                       </span>
                     </div>
