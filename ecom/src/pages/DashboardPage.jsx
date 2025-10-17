@@ -294,10 +294,7 @@ const DashboardPage = () => {
                       <div>
                         <h3 className="font-bold">Order #{order.id}</h3>
                         <p className="text-sm text-gray-600">{new Date(order.date).toLocaleDateString()}</p>
-                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                          <span className="inline-block w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                          Live from server
-                        </p>
+                     
                       </div>
                       <span className={`px-3 py-1 rounded text-sm font-medium ${
                         order.status === 'On Process' ? 'bg-yellow-100 text-yellow-700' : 
